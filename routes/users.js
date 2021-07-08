@@ -10,6 +10,6 @@ router.patch('/users/me', celebrate({
     name: Joi.string().min(2).max(30),
     email: Joi.string().required().email(),
   }),
-}), updateUser);
+}), auth, updateUser);
 
 module.exports = router;
