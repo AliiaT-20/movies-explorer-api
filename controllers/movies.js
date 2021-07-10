@@ -46,22 +46,16 @@ module.exports.createMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  Movie.findOneAndRemove({ movieId: req.params.movieId })
+  Movie.findOneAndRemove({ movieId: req.body.movieId })
     .then((movie) => {
       if (movie === null) {
         throw new CastError('Фильм с указанным _id не найден');
-      } else if (movie.owner !== req.user._id) {
+      }
+      if (movie.owner !== req.user._id) {
         throw new ForbiddenError('Вы можете удалить только свой фильм');
-      } else {
-        res.send({ data: movie });
       }
+      return Movie.findByIdAndRemove(req.movieId)
+        .then((item) => res.send({ data: item }));
     })
-    .catch((err) => {
-      if (err.name === 'TypeError') {
-        const error = new CastError('Карточка с указанным _id не найдена');
-        next(error);
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };

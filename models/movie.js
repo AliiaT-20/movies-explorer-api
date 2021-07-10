@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const isURL = require('validator/lib/isURL');
 
 const movieSchema = mongoose.Schema({
   country: {
@@ -25,9 +26,7 @@ const movieSchema = mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
-        return /^((http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9\-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-\/])*)?/.test(v);
-      },
+      validator: (v) => isURL(v),
       message: 'Неправильный формат ссылки',
     },
   },
@@ -35,9 +34,7 @@ const movieSchema = mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
-        return /^((http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9\-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-\/])*)?/.test(v);
-      },
+      validator: (v) => isURL(v),
       message: 'Неправильный формат ссылки',
     },
   },
@@ -45,9 +42,7 @@ const movieSchema = mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function (v) {
-        return /^((http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9\-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-\/])*)?/.test(v);
-      },
+      validator: (v) => isURL(v),
       message: 'Неправильный формат ссылки',
     },
   },
@@ -57,7 +52,7 @@ const movieSchema = mongoose.Schema({
     required: true,
   },
   movieId: {
-    type: String,
+    type: Number,
     required: true,
   },
   nameRU: {

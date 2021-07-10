@@ -1,3 +1,4 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -5,7 +6,8 @@ const MongoError = require('../errors/mongo-err');
 const ValidationError = require('../errors/validation-err');
 const AuthError = require('../errors/auth-err');
 const CastError = require('../errors/cast-err');
-const ForbiddenError = require('../errors/forbidden-err');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -24,7 +26,6 @@ module.exports.createUser = (req, res, next) => {
       },
     }))
     .catch((err) => {
-      console.log(err);
       if (err.name === 'MongoError' && err.code === 11000) {
         const error = new MongoError('Пользователь с таким e-mail уже существует');
         next(error);
@@ -41,11 +42,14 @@ module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+      );
       res.send({ token });
     })
     .catch(() => {
-      const error = new AuthError('Невозможно авторизоваться');
+      const error = new AuthError('Неправильные почта или пароль');
       next(error);
     })
     .catch(next);
@@ -71,20 +75,28 @@ module.exports.getUserInfo = (req, res, next) => {
 
 module.exports.updateUser = (req, res, next) => {
   const { name, email } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name: name.toString(), about: email.toString() })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const error = new ValidationError('Переданны некорректные данные пользователя');
-        next(error);
-      } else if (err.name === 'CastError') {
-        const error = new CastError('Пользователь с указанным _id не найден');
-        next(error);
-      } else if (err.name === 'TypeError') {
-        const error = new ForbiddenError('Вы можете обновить только свои данные');
-        next(error);
-      } else {
-        next(err);
+  User.findOne({ email })
+    .then((user) => {
+      if (user !== null) {
+        if (user.email !== email) {
+          throw new MongoError('Пользователь с таким email уже существует');
+        }
       }
-    });
+      User.findByIdAndUpdate(req.user._id, { name: name.toString(), email: email.toString() })
+        .then((userDel) => {
+          if (userDel === null) {
+            throw new CastError('Пользователь с указанным _id не найден');
+          }
+          res.send({ data: userDel });
+        })
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            const error = new ValidationError('Переданны некорректные данные пользователя');
+            next(error);
+          } else {
+            next(err);
+          }
+        });
+    })
+    .catch(next);
 };
