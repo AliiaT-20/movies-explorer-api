@@ -1,6 +1,5 @@
 const Movie = require('../models/movie');
 const ValidationError = require('../errors/validation-err');
-const CastError = require('../errors/cast-err');
 const ForbiddenError = require('../errors/forbidden-err');
 
 module.exports.getMovies = (req, res, next) => {
@@ -46,16 +45,24 @@ module.exports.createMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  Movie.findOneAndRemove({ movieId: req.body.movieId })
+  Movie.findById(req.params.movieId)
     .then((movie) => {
       if (movie === null) {
-        throw new CastError('Фильм с указанным _id не найден');
+        throw new ValidationError('Фильм с указанным _id не найден');
       }
-      if (movie.owner !== req.user._id) {
+      if (movie.owner.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Вы можете удалить только свой фильм');
       }
-      return Movie.findByIdAndRemove(req.movieId)
-        .then((item) => res.send({ data: item }));
+      Movie.findByIdAndRemove(req.params.movieId)
+        .then((item) => res.send({ data: item }))
+        .catch((err) => {
+          if (err.name === 'CastError') {
+            const error = new ValidationError('Фильм с указанным _id не найден');
+            next(error);
+          } else {
+            next(err);
+          }
+        });
     })
     .catch(next);
 };

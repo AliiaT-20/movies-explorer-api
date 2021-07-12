@@ -78,8 +78,10 @@ module.exports.updateUser = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (user !== null) {
-        if (user.email !== email) {
-          throw new MongoError('Пользователь с таким email уже существует');
+        if (req.user._id.toString() !== user._id.toString()) {
+          if (user.email === email) {
+            throw new MongoError('Пользователь с таким email уже существует');
+          }
         }
       }
       User.findByIdAndUpdate(req.user._id, { name: name.toString(), email: email.toString() })

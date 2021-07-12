@@ -1,14 +1,19 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const router = require('./routes/index');
 const { errorsHandler } = require('./middlewares/errorsHandler');
+const limiter = require('./middlewares/limiter');
 
 const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
+
+app.use(helmet());
+app.use(limiter);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
