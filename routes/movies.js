@@ -32,7 +32,7 @@ router.post('/movies', celebrate({
       }
       return helpers.message('Поле заполнено неккоректно');
     }),
-    movieId: Joi.string().hex().length(24).required(),
+    movieId: Joi.number().required(),
   }),
 }), auth, createMovie);
 router.delete('/movies/:movieId', celebrate({
