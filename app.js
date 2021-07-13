@@ -13,7 +13,6 @@ const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
 
 app.use(helmet());
-app.use(limiter);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,6 +25,8 @@ mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://localhost:27
 });
 
 app.use(requestLogger);
+
+app.use(limiter);
 
 app.use('/', router);
 

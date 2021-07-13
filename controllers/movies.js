@@ -53,16 +53,15 @@ module.exports.deleteMovie = (req, res, next) => {
       if (movie.owner.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Вы можете удалить только свой фильм');
       }
-      Movie.findByIdAndRemove(req.params.movieId)
-        .then((item) => res.send({ data: item }))
-        .catch((err) => {
-          if (err.name === 'CastError') {
-            const error = new ValidationError('Фильм с указанным _id не найден');
-            next(error);
-          } else {
-            next(err);
-          }
-        });
+      return Movie.findByIdAndRemove(req.params.movieId)
+        .then((item) => res.send({ data: item }));
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        const error = new ValidationError('Фильм с указанным _id не найден');
+        next(error);
+      } else {
+        next(err);
+      }
+    });
 };
