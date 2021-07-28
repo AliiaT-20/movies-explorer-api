@@ -12,6 +12,21 @@ const limiter = require('./middlewares/limiter');
 const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
 
+const allowedCors = [
+  'https://aliiat.diplom.nomoredomains.club',
+  'http://aliiat.diplom.nomoredomains.club',
+  'localhost:3000',
+];
+
+app.use((req, res, next) => {
+  const { origin } = req.headers;
+  if (allowedCors.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+
+  next();
+});
+
 app.use(helmet());
 
 app.use(bodyParser.json());
