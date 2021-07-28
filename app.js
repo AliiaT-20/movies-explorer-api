@@ -4,7 +4,6 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
-const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const router = require('./routes/index');
 const { errorsHandler } = require('./middlewares/errorsHandler');
@@ -19,6 +18,21 @@ const allowedCors = [
   'http://localhost:3000',
 ];
 
+app.use((req, res, next) => {
+  const { origin } = req.headers;
+  if (allowedCors.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    const { method } = req;
+    const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
+    const requestHeaders = req.headers['Access-Control-Request-Headers'];
+    if (method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
+      res.header('Access-Control-Allow-Headers', requestHeaders);
+    }
+  }
+  next();
+});
+
 app.use(helmet());
 
 app.use(bodyParser.json());
@@ -32,14 +46,6 @@ mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://localhost:27
 });
 
 app.use(requestLogger);
-
-app.use((req, res, next) => {
-  cors({
-    origin: allowedCors,
-    credentials: true,
-  });
-  next();
-});
 
 app.use(limiter);
 
