@@ -15,7 +15,7 @@ const app = express();
 const allowedCors = [
   'https://aliiat.diplom.nomoredomains.club',
   'http://aliiat.diplom.nomoredomains.club',
-  'localhost:3000',
+  'http://localhost:3000',
 ];
 
 app.use((req, res, next) => {
