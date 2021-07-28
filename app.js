@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const router = require('./routes/index');
 const { errorsHandler } = require('./middlewares/errorsHandler');
@@ -12,11 +13,11 @@ const limiter = require('./middlewares/limiter');
 const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+const allowedCors = [
+  'https://aliiat.diplom.nomoredomains.club',
+  'http://aliiat.diplom.nomoredomains.club',
+  'http://localhost:3000',
+];
 
 app.use(helmet());
 
@@ -31,6 +32,14 @@ mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://localhost:27
 });
 
 app.use(requestLogger);
+
+app.use((req, res, next) => {
+  cors({
+    origin: allowedCors,
+    credentials: true,
+  });
+  next();
+});
 
 app.use(limiter);
 
