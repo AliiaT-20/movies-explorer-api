@@ -13,7 +13,7 @@ const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const allowedCors = [
   'https://aliiat.diplom.nomoredomains.club',
   'http://aliiat.diplom.nomoredomains.club',
-  'localhost:3000',
+  'http://localhost:3000',
 ];
 const app = express();
 
